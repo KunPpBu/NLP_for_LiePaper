@@ -29,6 +29,7 @@ pie(count_ca.location, main="ChatGPT tweets by verified twitter users location w
 dev.off()
 
 # tweets post date
+date1 = NULL
 date0 <- data$date
 for(i in 1: length(date0)){
   date1[i] <- strsplit(date0, " ")[[i]][1]

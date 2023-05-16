@@ -120,4 +120,29 @@ wordcloud(words = df$word, freq = df$freq, min.freq = 1,
           colors=brewer.pal(8, "Dark2"))
 
 ```
+```{r sentiment analysis}
+library(sentimentr)
+sentences <- ca_data$text
+sentiments <- sentiment(sentences)
+print(sentiments)
+sentiments_aggregate <- sentiment_by(sentences)
+print(sentiments_aggregate)
+summary(sentiments_aggregate$ave_sentiment)
+boxplot(sentiments_aggregate$ave_sentiment)
+library(ggplot2)
+qplot(sentiments_aggregate$ave_sentiment,   geom="histogram",binwidth=0.1,main="Review Sentiment Histogram")
+```
 
+
+```{r}
+sentiments_aggregate$sentiment <- NA
+for (i in 1:length(sentences)){
+  sentiments_aggregate <- as.data.frame(sentiments_aggregate)
+  sentiments_aggregate <- sentiment_by(sentences)
+  sentiments_aggregate$sentiment <- NA
+  if (as.numeric(sentiments_aggregate$ave_sentiment[i]) > 0) {sentiments_aggregate$sentiment[i]=='Postive'}
+  else if (as.numeric(sentiments_aggregate$ave_sentiment[i]) < 0){sentiments_aggregate$sentiment[i]=='Negitive'}
+  else if (as.numeric(sentiments_aggregate$ave_sentiment[i]) == 0){sentiments_aggregate$sentiment[i]=='Neutral'}
+}
+head(sentiments_aggregate)
+```
