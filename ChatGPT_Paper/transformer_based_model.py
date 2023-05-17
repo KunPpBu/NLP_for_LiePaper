@@ -74,7 +74,8 @@ def plot_sentiment(df, feature, title):
     plt.show()
 
 news_df['text_sentiment'] = news_df['clean_doc'].apply(lambda x: find_sentiment(x))
-plot_sentiment(news_df, 'text_sentiment', 'Text')
+plot_sentiment(news_df, 'text_sentiment', 'Full Text')
 
 text_sentiment = news_df['text_sentiment']
 news_df.to_csv('sentiment_output_full_text.csv', index=True)
+
