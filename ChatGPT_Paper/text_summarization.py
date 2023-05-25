@@ -19,7 +19,7 @@ news_df['clean_doc'] = news_df['text'].str.replace("[^a-zA-Z#]", " ")
 news_df['clean_doc'] = news_df['clean_doc'].apply(lambda x: re.sub("#[A-Za-z0-9_]+", "", x))
 
 # removing short words
-news_df['clean_doc'] = news_df['clean_doc'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
+#news_df['clean_doc'] = news_df['clean_doc'].apply(lambda x: ' '.join([w for w in x.split() if len(w)>3]))
 
 # make all text lowercase
 news_df['clean_doc'] = news_df['clean_doc'].apply(lambda x: x.lower())
@@ -95,20 +95,89 @@ def plot_sentiment(df, feature, title):
     plt.tight_layout()
     plt.show()
 
+news_df['text_sentiment'] = news_df['clean_doc'].apply(lambda x: find_sentiment(x))
+plot_sentiment(news_df, 'text_sentiment', 'Full Text')
+
+
+
 news_df['summary_text_sentiment'] = news_df['summary'].apply(lambda x: find_sentiment(x))
 plot_sentiment(news_df, 'summary_text_sentiment', 'Summarized Text')
 
 
 
-text_sentiment = news_df['summary_text_sentiment']
+#text_sentiment = news_df['summary_text_sentiment']
 news_df.to_csv('sentiment_output_summary_text.csv', index=True)
 
 
 
 import transformers
 from transformers import pipeline
-summary = news_df['summary'].astype(str)
+#summary = pd.Series(news_df['summary'], dtype = 'string')
 model_id = "cardiffnlp/twitter-roberta-base-sentiment-latest"
 sentiment_pipeline = pipeline("sentiment-analysis", model=model_id)
-result = sentiment_pipeline(summary)
+result = news_df['clean_doc'].apply(lambda x: sentiment_pipeline(x))
 result_df = pd.DataFrame(result, index=range(1, len(result)+1))
+test1 = result_df['clean_doc']
+test_list1=[]
+for i in range(1, len(test1)):
+    res = {k: v for d in test1[i] for k, v in d.items()}
+    test_list1.append(res)
+
+test1_df = pd.DataFrame(test_list1)
+test1_df = test1_df.rename(columns={"label" : "transformer_sentiment_fulltext", "score": "transformer_score_fulltext"})
+
+compare_df = pd.concat([news_df,test1_df], axis=1, join="inner")
+compare_df = compare_df.rename(columns={"text_sentiment" : "nltk_sentiment_fulltext",
+                                        "summary_text_sentiment": "nltk_sentiment_summary"})
+compare_df.to_csv('compare_results_transformer_vs_nltk.csv', index= False)
+
+compare_senti = compare_df[["nltk_sentiment_fulltext", "nltk_sentiment_summary", "transformer_sentiment_fulltext"]]
+
+plot_sentiment(compare_df, 'transformer_sentiment_fulltext', 'Transformer Text')
+
+#transformer for summarization
+result2 = news_df['summary'].apply(lambda x: sentiment_pipeline(x))
+result2_df = pd.DataFrame(result2, index=range(1, len(result)+1))
+test2 = result2_df['summary']
+test_list2=[]
+for i in range(1, len(test2)):
+    res = {k: v for d in test2[i] for k, v in d.items()}
+    test_list2.append(res)
+
+test2_df = pd.DataFrame(test_list2)
+test2_df = test2_df.rename(columns={"label" : "transformer_sentiment_summary", "score": "transformer_score_summary"})
+
+
+compare_df2 = pd.concat([compare_df,test2_df], axis=1, join="inner")
+compare_df2.to_csv('compare_results_transformer_vs_nltk.csv', index= False)
+
+
+
+p1 = compare_df2["nltk_sentiment_fulltext"].value_counts()\
+    .plot(kind='bar',
+          title = 'Count of full text tweets by sentiments analysis using nltk',
+          figsize= (10,8))
+#p1.set_xlabel('Sentiment by nltk for full text')
+
+
+plt.show()
+
+p2 = compare_df2["nltk_sentiment_summary"].value_counts()\
+    .plot(kind='bar',
+          title = 'Count of summarized tweets by sentiments analysis using nltk',
+          figsize= (10,8))
+
+
+p3 = compare_df2["transformer_sentiment_fulltext"].value_counts()\
+    .plot(kind='bar',
+          title = 'Count of full text tweets by sentiments analysis using transformer',
+          figsize= (10,8))
+
+
+p4 = compare_df2["transformer_sentiment_summary"].value_counts()\
+    .plot(kind='bar',
+          title = 'Count of summarized tweets by sentiments analysis using transformer',
+          figsize= (10,8))
+
+
+# fig, axs = plt.subplot(1, 3, figsize = (12,3))
