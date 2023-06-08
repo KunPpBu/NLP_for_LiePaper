@@ -181,3 +181,8 @@ p4 = compare_df2["transformer_sentiment_summary"].value_counts()\
 
 
 # fig, axs = plt.subplot(1, 3, figsize = (12,3))
+plot_sentiment(compare_df2, 'transformer_sentiment_fulltext', 'transformer sentiment fulltext')
+plot_sentiment(compare_df2, 'transformer_sentiment_summary', 'transformer sentiment summary')
+
+plot_sentiment(compare_df2, 'nltk_sentiment_fulltext', 'NLTK sentiment fulltext')
+plot_sentiment(compare_df2, 'nltk_sentiment_summary', 'NLTK sentiment summary')
