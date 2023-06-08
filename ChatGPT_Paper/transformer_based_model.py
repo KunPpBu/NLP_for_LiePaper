@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import sklearn
+from sklearn import metrics
 import seaborn as sns
 import re
 import nltk
